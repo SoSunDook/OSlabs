@@ -37,6 +37,22 @@ void list_directory(const char *path, bool all_files, bool long_format) {
 int main(int argc, char *argv[]) {
     bool all_files = false;
     bool long_format = false;
+    int opt;
+
+
+    while ((opt = getopt(argc, argv, "la")) != -1) {
+        switch (opt) {
+            case 'l':
+                long_format = true;
+                break;
+            case 'a':
+                all_files = true;
+                break;
+            default:
+                fprintf(stderr, "Usage: %s [-l] [-a] [directory]\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
 
     const char *path = (optind < argc) ? argv[optind] : ".";
 
