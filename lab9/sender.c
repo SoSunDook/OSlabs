@@ -49,18 +49,24 @@ int main() {
 
     shmid = shmget(shm_key, SHM_SIZE, IPC_CREAT | 0666);
     if (shmid == -1) {
+        remove("/tmp/sender.lock");
         perror("shmget");
         exit(1);
     }
 
     shmaddr = (char *)shmat(shmid, NULL, 0);
     if (shmaddr == (char *)-1) {
+        remove("/tmp/sender.lock");
+        shmctl(shmid, IPC_RMID, NULL);
         perror("shmat");
         exit(1);
     }
 
     semid = semget(sem_key, 1, IPC_CREAT | 0666);
     if (semid == -1) {
+        remove("/tmp/sender.lock");
+        shmctl(shmid, IPC_RMID, NULL);
+        shmdt(shmaddr);
         perror("semget");
         exit(1);
     }
@@ -68,6 +74,10 @@ int main() {
     union semun sem_arg;
     sem_arg.val = 1;
     if (semctl(semid, 0, SETVAL, sem_arg) == -1) {
+        remove("/tmp/sender.lock");
+        shmctl(shmid, IPC_RMID, NULL);
+        shmdt(shmaddr);
+        semctl(semid, 0, IPC_RMID);
         perror("semctl");
         exit(1);
     }
@@ -87,6 +97,11 @@ int main() {
 
         sleep(1);
     }
+
+    shmdt(shmaddr);
+    shmctl(shmid, IPC_RMID, NULL);
+    semctl(semid, 0, IPC_RMID);
+    remove("/tmp/sender.lock");
 
     return 0;
 }

@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <sys/wait.h>
 
 #define FIFO_PATH "/tmp/my_fifo"
 #define BUFFER_SIZE 256

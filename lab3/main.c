@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 void handle_sigint(int sig) {
     printf("Process [pid: %d] caught SIGINT (signal number: %d)\n", getpid(), sig);
@@ -44,8 +45,24 @@ int main() {
     } else if (pid == 0) {
         printf("Child process [pid: %d] running...\n", getpid());
         sleep(3);
+        exit(42);
     } else {
         printf("Parent process [pid: %d] created child with PID %d\n", getpid(), pid);
+
+        int status;
+        pid_t child_pid = wait(&status);
+
+        if (child_pid > 0) {
+            if (WIFEXITED(status)) {
+                int exit_status = WEXITSTATUS(status);
+                printf("Child process [pid: %d] exited with status %d\n", child_pid, exit_status);
+            } else {
+                printf("Child process [pid: %d] did not exit normally\n", child_pid);
+            }
+        } else {
+            perror("wait() failed");
+        }
+
         sleep(7);
     }
 

@@ -8,17 +8,11 @@
 
 char shared_array[ARRAY_SIZE];
 pthread_mutex_t mutex;
-pthread_cond_t cond_var;
-int updated = 0;
-
 
 void* reader(void* arg) {
     long tid = (long)arg;
     while (1) {
         pthread_mutex_lock(&mutex);
-        while (!updated) {
-            pthread_cond_wait(&cond_var, &mutex);
-        }
 
         printf("Reader %ld: ", tid);
         for (int i = 0; i < ARRAY_SIZE; ++i) {
@@ -32,7 +26,6 @@ void* reader(void* arg) {
     return NULL;
 }
 
-
 void* writer(void* arg) {
     char current_digit = '0';
     while (1) {
@@ -41,9 +34,6 @@ void* writer(void* arg) {
         for (int i = 0; i < ARRAY_SIZE; ++i) {
             shared_array[i] = current_digit;
         }
-
-        updated = 1;
-        pthread_cond_broadcast(&cond_var);
 
         current_digit++;
         if (current_digit > '9') {
@@ -61,7 +51,6 @@ int main() {
     pthread_t writer_thread;
 
     pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&cond_var, NULL);
 
     pthread_create(&writer_thread, NULL, writer, NULL);
 
@@ -75,7 +64,6 @@ int main() {
     }
 
     pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&cond_var);
 
     return 0;
 }

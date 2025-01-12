@@ -38,8 +38,6 @@ void *reader_thread(void *arg) {
         printf("[Reader %ld] Buffer: %s\n", tid, buffer);
 
         pthread_mutex_unlock(&mutex);
-
-        usleep(500000);
     }
     return NULL;
 }

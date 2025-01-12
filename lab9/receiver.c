@@ -29,12 +29,15 @@ int main() {
 
     shmaddr = (char *)shmat(shmid, NULL, 0);
     if (shmaddr == (char *)-1) {
+        shmctl(shmid, IPC_RMID, NULL);
         perror("shmat");
         exit(1);
     }
 
     semid = semget(sem_key, 1, 0666);
     if (semid == -1) {
+        shmdt(shmaddr);
+        shmctl(shmid, IPC_RMID, NULL);
         perror("semget");
         exit(1);
     }
@@ -54,6 +57,10 @@ int main() {
 
         sleep(1);
     }
+
+    shmdt(shmaddr);
+    shmctl(shmid, IPC_RMID, NULL);
+    semctl(semid, 0, IPC_RMID);
 
     return 0;
 }
